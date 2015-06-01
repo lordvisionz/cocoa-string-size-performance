@@ -14,3 +14,4 @@ Here are some performance metrics
 <pre><b>100000</b>             <b>3.06</b>                  <b>3.14</b>                  <b>0.689</b></pre>
 <pre><b>1000000</b>            <b>29.5</b>                  <b>31.3</b>                  <b>7.06</b></pre>
 
+<b>NOTE:</b> The NSLayoutManager mechanism creates an NSTextStorage object for every string. These objects are very heavyweight and memory intensive. By just creating 1 and re-using them however causes layout to happen for every string and the measurement time goes up to 40 seconds for a million strings.
