@@ -7,6 +7,11 @@ This is a console application in Cocoa to show the various ways to measure the w
 <li> [NSLayoutManager](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/TextLayout/Tasks/StringHeight.html#//apple_ref/doc/uid/20001809-CJBGBIBB) (get text width instead of height) 
 <br><br>
 
+To play with the project, download the file, open up main.m. <br>
+<ol>
+<li>Change ITEMS_COUNT to the number of strings you want measured.
+<li>Change ITEMS_ARRAY_CHUNK_THRESHOLD to chunk up a big array into small arrays.
+
 Here are some performance metrics   
 <pre><b>Count\Mechanism</b>    <b>sizeWithAttributes</b>    <b>NSAttributedString</b>    <b>NSLayoutManager</b></pre>
 <pre><b>1000</b>               <b>0.057</b>                 <b>0.031</b>                 <b>0.007</b></pre>
