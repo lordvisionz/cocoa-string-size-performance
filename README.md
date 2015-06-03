@@ -22,7 +22,7 @@ Here are some performance metrics on my Macbook Pro running Yosemite 2.3GHz Inte
 <b>NOTE:</b> The NSLayoutManager mechanism creates an NSTextStorage object for every string. These objects are very heavyweight and memory intensive. By just creating 1 and re-using them however causes layout to happen for every string and the measurement time goes up to 40 seconds for a million strings.
 
 <h1>UPDATE</h1>
-Using CoreText is the way to go. For the above table.
+Using CoreText is the way to go. For the above table here is the performance metric with and without multithreading.
 <pre><b>Count\Mechanism</b>    <b>Core Text without Multithreading</b>    <b>Core Text with Multithreading</b></pre>
 <pre><b>1000</b>               <b>0.018</b>                               <b>0.02</b></pre>               
 <pre><b>10000</b>              <b>0.023</b>                               <b>0.023</b></pre>            
