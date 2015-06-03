@@ -58,12 +58,10 @@ NS_INLINE void performAnalysisUsingNSAttributedString(NSArray* items)
     NSLog(@"Time taken to measure the width(%f) of %li strings is %f\n\n\n",width, items.count, timeTaken);
 }
 
-NS_INLINE void performAnalysisUsingNSLayoutManager(NSArray* items)
+static void performAnalysisUsingNSLayoutManager(NSArray* items)
 {
-    NSArray *chunks = splitIntoChunks(items, ITEMS_ARRAY_CHUNK_THRESHOLD);
-    
-    __block double width = 0, timeTaken = 0;
-    __block NSDate *startDate = [NSDate dateWithTimeIntervalSinceNow:0];
+    double width = 0, timeTaken = 0;
+    NSDate *startDate = [NSDate dateWithTimeIntervalSinceNow:0];
     
     NSLayoutManager *layoutManager = [NSLayoutManager new];
     NSTextContainer *textContainer = [NSTextContainer new];
@@ -71,27 +69,14 @@ NS_INLINE void performAnalysisUsingNSLayoutManager(NSArray* items)
     [layoutManager addTextContainer:textContainer];
     
     NSMutableArray *textStorageObjects = [NSMutableArray new];
-    
-    dispatch_group_t group = dispatch_group_create();
-    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0);
-    
-    for(NSArray *chunk in chunks)
+    for(NSString *item in items)
     {
-        NSTextStorage *textStorage = [NSTextStorage new];
-        dispatch_group_async(group, queue, ^
-        {
-            [textStorage replaceCharactersInRange:NSMakeRange(0, textStorage.length) withString:[chunk componentsJoinedByString:@"\n"]];
-        });
-        [textStorageObjects addObject:textStorage];
+        @autoreleasepool {
+            NSTextStorage *textStorage = [[NSTextStorage alloc] initWithString:item];
+            [textStorage addLayoutManager:layoutManager];
+            [textStorageObjects addObject:textStorage];
+        }
     }
-    
-    dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
-    
-    for(NSTextStorage *textStorage in textStorageObjects)
-    {
-        [textStorage addLayoutManager:layoutManager];
-    }
-    
     timeTaken = -[startDate timeIntervalSinceNow];
     NSLog(@"-----------------------Using NSLayoutManager------------------\n");
     NSLog(@"Time taken to create %li NSTextStorage objects is %f",items.count, timeTaken);
@@ -101,7 +86,45 @@ NS_INLINE void performAnalysisUsingNSLayoutManager(NSArray* items)
     width = [layoutManager usedRectForTextContainer:textContainer].size.width;
     timeTaken = -[startDate timeIntervalSinceNow];
     NSLog(@"Time taken to measure the width(%f) of %li strings is %f\n\n\n",width, items.count, timeTaken);
+}
 
+static void performUsingCoreText(NSArray *items)
+{
+    NSArray *chunks = splitIntoChunks(items, ITEMS_ARRAY_CHUNK_THRESHOLD);
+    
+    __block double width = 0, timeTaken;
+    NSFont *font = [NSFont fontWithName:@"Helvetica" size:12];
+    NSDictionary *attributes = @{NSFontAttributeName: font};
+    CGPathRef path = CGPathCreateWithRect(CGRectMake(0, 0, CGFLOAT_MAX, CGFLOAT_MAX), NULL);
+    
+    dispatch_group_t group = dispatch_group_create();
+    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0);
+    
+    NSDate *startDate = [NSDate dateWithTimeIntervalSinceNow:0];
+    for(NSArray *chunk in chunks)
+    {
+        dispatch_group_async(group, queue, ^{
+            NSString * chunkedString = [chunk componentsJoinedByString:@"\n"];
+            NSMutableAttributedString *mutableString = [[NSMutableAttributedString alloc]initWithString:chunkedString attributes:attributes];
+            CFAttributedStringRef stringRef = (__bridge CFAttributedStringRef)mutableString;
+            CTFramesetterRef framesetterRef = CTFramesetterCreateWithAttributedString(stringRef);
+            CTFrameRef frameRef = CTFramesetterCreateFrame(framesetterRef, CFRangeMake(0, chunkedString.length), path, NULL);
+            
+            NSArray *lines = (__bridge NSArray*)CTFrameGetLines(frameRef);
+            
+            for(id item in lines)
+            {
+                CTLineRef line = (__bridge CTLineRef)item;
+                double lineWidth = CTLineGetTypographicBounds(line, NULL, NULL, NULL);
+                width = MAX(width, lineWidth);
+            }
+        });
+    }
+    dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+
+    timeTaken = -[startDate timeIntervalSinceNow];
+    NSLog(@"-----------------------Using Core Text------------------\n");
+    NSLog(@"Time taken to measure the width(%f) of %li strings is %f",width, items.count, timeTaken);
 }
 
 int main(int argc, const char * argv[])
@@ -115,9 +138,10 @@ int main(int argc, const char * argv[])
         [items addObject:randomNumber];
     }
     
-//    performAnalysisUsingSizeWithAttributes(items);
-//    performAnalysisUsingNSAttributedString(items);
+    performAnalysisUsingSizeWithAttributes(items);
+    performAnalysisUsingNSAttributedString(items);
     performAnalysisUsingNSLayoutManager(items);
+    performUsingCoreText(items);
     
     return 0;
 }
