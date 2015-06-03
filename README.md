@@ -24,7 +24,7 @@ Here are some performance metrics on my Macbook Pro running Yosemite 2.3GHz Inte
 <h1>UPDATE</h1>
 Using CoreText is the way to go. For the above table.
 <pre><b>Count\Mechanism</b>    <b>Core Text without Multithreading</b>    <b>Core Text with Multithreading</b>
-<pre><b>1000</b>               <b>0.018</b>                 <b>0.02</b>               
-<pre><b>10000</b>              <b>0.023</b>                 <b>0.023</b>                
-<pre><b>100000</b>             <b>0.161</b>                  <b>0.061</b>                  
-<pre><b>1000000</b>            <b>1.46</b>                  <b>0.447</b>                 
+<pre><b>1000</b>               <b>0.018</b>                 <b>0.02</b></pre>               
+<pre><b>10000</b>              <b>0.023</b>                 <b>0.023</b></pre>            
+<pre><b>100000</b>             <b>0.161</b>                  <b>0.061</b></pre>                   
+<pre><b>1000000</b>            <b>1.46</b>                  <b>0.447</b></pre>          
