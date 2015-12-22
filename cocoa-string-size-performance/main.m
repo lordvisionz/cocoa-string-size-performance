@@ -8,8 +8,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-#define ITEMS_COUNT 1000000
-#define ITEMS_ARRAY_CHUNK_THRESHOLD 10000
+#define ITEMS_COUNT 10000
+#define ITEMS_ARRAY_CHUNK_THRESHOLD 1000
 
 
 NS_INLINE NSArray* splitIntoChunks(NSArray *items, NSUInteger chunkSize)
@@ -127,17 +127,36 @@ static void performUsingCoreText(NSArray *items)
     NSLog(@"Time taken to measure the width(%f) of %li strings is %f",width, items.count, timeTaken);
 }
 
+static NSString* randomStringWithLength(int len)
+{
+    NSString *letters = @"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    NSMutableString *randomString = [NSMutableString stringWithCapacity: len];
+    
+    for (int i=0; i<len; i++) {
+        [randomString appendFormat: @"%C", [letters characterAtIndex: arc4random_uniform([letters length])]];
+    }
+    
+    return randomString;
+}
+
 int main(int argc, const char * argv[])
 {
     NSMutableArray *items = [NSMutableArray new];
     
+//    for(NSUInteger i = 0; i < ITEMS_COUNT; i++)
+//    {
+//        double random = (double)arc4random_uniform(1000) / 1000;
+//        NSString *randomNumber = [NSString stringWithFormat:@"%f", random];
+//        [items addObject:randomNumber];
+//    }
+    
     for(NSUInteger i = 0; i < ITEMS_COUNT; i++)
     {
         double random = (double)arc4random_uniform(1000) / 1000;
-        NSString *randomNumber = [NSString stringWithFormat:@"%f", random];
+        NSString *randomNumber = randomStringWithLength((int)(random * 100));
         [items addObject:randomNumber];
     }
-    
+
     performAnalysisUsingSizeWithAttributes(items);
     performAnalysisUsingNSAttributedString(items);
     performAnalysisUsingNSLayoutManager(items);
