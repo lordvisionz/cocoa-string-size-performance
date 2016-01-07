@@ -104,11 +104,12 @@ static void performUsingCoreText(NSArray *items)
     for(NSArray *chunk in chunks)
     {
         dispatch_group_async(group, queue, ^{
-            NSString * chunkedString = [chunk componentsJoinedByString:@"\n"];
-            NSMutableAttributedString *mutableString = [[NSMutableAttributedString alloc]initWithString:chunkedString attributes:attributes];
+            NSMutableAttributedString *mutableString = [[NSMutableAttributedString alloc]initWithString:[chunk componentsJoinedByString:@"\n"]
+                                                                                             attributes:attributes];
+            [mutableString appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
             CFAttributedStringRef stringRef = (__bridge CFAttributedStringRef)mutableString;
             CTFramesetterRef framesetterRef = CTFramesetterCreateWithAttributedString(stringRef);
-            CTFrameRef frameRef = CTFramesetterCreateFrame(framesetterRef, CFRangeMake(0, chunkedString.length), path, NULL);
+            CTFrameRef frameRef = CTFramesetterCreateFrame(framesetterRef, CFRangeMake(0, mutableString.length), path, NULL);
             
             NSArray *lines = (__bridge NSArray*)CTFrameGetLines(frameRef);
             
@@ -156,6 +157,7 @@ int main(int argc, const char * argv[])
         NSString *randomNumber = randomStringWithLength((int)(random * 100));
         [items addObject:randomNumber];
     }
+
 
     performAnalysisUsingSizeWithAttributes(items);
     performAnalysisUsingNSAttributedString(items);
